@@ -1,15 +1,19 @@
-## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud
+## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud only
 > Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 in a matter of seconds.  
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
+> use [Fastly, Cloudflare, Section](../../tree/fastly) in front 
 
-<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="200" height="140"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="175" height="145"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="250" height="155">
-<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="120" height="135">
+<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="155" height="105"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="140" height="130"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="235" height="140">
+<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="105" height="120"><img src="https://user-images.githubusercontent.com/1591200/143559434-7593c7bf-79b5-4a1f-b6cc-71060cf0bbec.png" width="160" height="170">
 
 <br />
 
 ## AWS Graviton2 Processor - Enabling the best performance in EC2:
-![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)
-
+![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)  
+  
+> [Amazon EC2 C7g instances upgrade](https://aws.amazon.com/ec2/instance-types/c7g/)  
+> Best price performance for compute-intensive workloads in Amazon EC2  
+  
 <br />
 
 ## [?] Why we need Adobe Commerce Cloud alternative:
@@ -84,7 +88,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    sudo yum install -y yum-utils
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-   sudo yum -y install terraform
+   sudo yum -y install packer terraform
 ```
 - [x] Create deployment directory:  
 ```
@@ -96,8 +100,13 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
-**[ ! ]** Note: Right after `terraform apply` you will receive email from amazon to approve resources  
-**[ ! ]** Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`  
+**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
+- [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
+- [x] Define either [production] or [development] environment variable in `variables.tf`
+  
+ **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
+   
 - [x] Run:
 ```
    terraform init
@@ -109,11 +118,10 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `5` autoscaling groups with launch templates converted from `user_data`  
- `4` target groups for load balancer (varnish frontend admin staging)  
- `1` build server to compile all the code  
+ `3` autoscaling groups with launch templates converted from `user_data`  
+ `3` target groups for load balancer (varnish frontend admin)   
  `2` load balancers (external/internal) with listeners / rules  
- `2` rds mariadb databases multi AZ production, single AZ staging  
+ `1` rds mariadb databases multi AZ  
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
@@ -130,7 +138,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  
 ##
 - [x] Deployment into isolated Virtual Private Cloud
-- [x] Autoscaling policy per each group, excluding `build` instance
+- [x] Autoscaling policy per each group
 - [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
 - [x] Instance Profile assigned to simplify EC2 management
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
@@ -144,18 +152,16 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] MariaDB database dump for data analysis
 - [x] Enhanced security in AWS and LEMP 
 - [x] AWS Inspector Assessment templates
+- [x] AWS Config resource configuraton rules
 - [x] AWS WAF Protection rules  
 
 ##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
+![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/149658151-d2da3630-e7cc-466e-868d-d9e341aad29e.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- [x] Local provisioner copy files from https://github.com/magenx/Magento-2
-- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
-- [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
-- [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
+- [x] Check CodePipeline to install Magento 2 and pre-configure modules.
+- [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
@@ -163,12 +169,12 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 |**Performance and security enhancements**||**Enabled modules for test requirements**|
 |:-----|---|:-----|
-|Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
-|Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
-|Easy deployments||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
-|Less dependencies||[Magefan Blog](https://github.com/magefan/module-blog)|
-|Zero maintenance||[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
-|Low security risks||[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
+|Faster backend and frontend from 14% upto 50%||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
+|Better memory management upto 15%|| |
+|Easy deployments|| |
+|Less dependencies|| |
+|Zero maintenance|| |
+|Low security risks|| |
 
 <br />
 
@@ -180,16 +186,17 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Change deployment logic to your needs.  
    
 <br />
+
+## AMI configuration and build using Packer:
+- [x] Build custom AMI with Packer configuration
+- [x] Reuse AMI in Terraform to create launch_template 
+   
+<br />
    
 ## [:e-mail:] Contact us for installation and support:
 We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture.
 - [x] Write us an [email](mailto:info@magenx.com?subject=Magento%202%20auto%20scaling%20cluster%20on%20AWS) to discuss the project.
 - [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
-    
-<br />
-   
-## ![hyvatheme](https://user-images.githubusercontent.com/1591200/132108893-0fc007b1-87f0-47a1-b8c1-d6dd3a6dda83.png)
-[Hyvä themes](https://hyva.io/hyva-themes-license.html) - Magento 2 frontend alternative to PWA. Hyvä themes is a brand-new frontend for Magento 2 with the best DevOps experience, performance and time to market. With Hyvä, you build your Magento 2 shop quicker and with a lower budget. And the result is a modern and ultra fast browser experience for your visitors. We recommend that you start developing your store using this theme or switch your existing store frontend to this theme.  
     
 <br />
     
